@@ -17,14 +17,15 @@
     "MaxPlayers": 16,
     "MinPlayers": 1,
     "GameNetworkType": "Multiplayer",
-    "MapSelect": "Unrestricted",
+    "MapSelect": "Official",
     "MapList": [
-      "facepunch.construct"
+      "ps_test"
     ],
     "RankType": "None",
     "PerMapRanking": false,
     "LeaderboardType": "None",
     "GameCategory": "TechDemos",
-    "ProjectTemplate": null
+    "ProjectTemplate": null,
+    "CsProjName": ""
   }
 }

@@ -4,7 +4,7 @@ using System.ComponentModel;
 namespace MyGame;
 
 public partial class Pawn : AnimatedEntity
-{
+{ 
 	[Net, Predicted]
 	public Weapon ActiveWeapon { get; set; }
 
@@ -94,12 +94,12 @@ public partial class Pawn : AnimatedEntity
 		c.DressEntity( this );
 	}
 
-	public override void Simulate( IClient cl )
+	public override void Simulate( IClient client )
 	{
 		SimulateRotation();
-		Controller?.Simulate( cl );
+		Controller?.Simulate( client );
 		Animator?.Simulate();
-		ActiveWeapon?.Simulate( cl );
+		ActiveWeapon?.Simulate( client );
 		EyeLocalPosition = Vector3.Up * (64f * Scale);
 	}
 
@@ -115,6 +115,58 @@ public partial class Pawn : AnimatedEntity
 		if ( ViewAngles.pitch > 90f || ViewAngles.pitch < -90f )
 		{
 			look = look.WithYaw( look.yaw * -1f );
+		}
+
+		if ( Input.Down( "left" ) && Input.Down( "forward" ) && Input.Pressed( "jump" ) )
+		{
+			Rotation rotate20Degs = Rotation.FromAxis( Vector3.Up, 20f );
+			Vector3 rotatedForward = AimRay.Forward * rotate20Degs;
+			Ray wallrunRay = new Ray( AimRay.Position, rotatedForward );
+			TraceResult tr = Trace.Ray( wallrunRay, 200 )
+					.StaticOnly()
+					.Run();
+
+			DebugOverlay.Sphere( AimRay.Position, 2f, Color.Blue, duration: 10f );
+			DebugOverlay.Line( EyePosition, tr.EndPosition, 10f, false );
+			if ( tr.Hit )
+			{
+				DebugOverlay.Sphere( tr.EndPosition, 2f, Color.Red, duration: 10f );
+				Log.Info( "Wallrun Left!!!" );
+			}
+		}
+		if ( Input.Down( "right" ) && Input.Down( "forward" ) && Input.Pressed( "jump" ) )
+		{
+			Rotation rotate20Degs = Rotation.FromAxis( Vector3.Up, -20f );
+			Vector3 rotatedForward = AimRay.Forward * rotate20Degs;
+			Ray wallrunRay = new Ray( AimRay.Position, rotatedForward );
+			TraceResult tr = Trace.Ray( wallrunRay, 200 )
+					.StaticOnly()
+					.Run();
+
+			DebugOverlay.Sphere( AimRay.Position, 2f, Color.Blue, duration: 10f );
+			DebugOverlay.Line( EyePosition, tr.EndPosition, 10f, false );
+			if ( tr.Hit )
+			{
+				DebugOverlay.Sphere( tr.EndPosition, 2f, Color.Red, duration: 10f );
+				Log.Info( "Wallrun Right!!!" );
+			}
+		}
+
+
+		if ( Input.Pressed( "attack1" ) ) {
+			Rotation rotate20Degs = Rotation.FromAxis( Vector3.Up, -20f );
+			Vector3 rotatedForward = AimRay.Forward * rotate20Degs;
+			Ray wallrunRay = new Ray(AimRay.Position, rotatedForward);
+			TraceResult tr = Trace.Ray( wallrunRay, 200 )
+					.StaticOnly()
+					.Run();
+
+			DebugOverlay.Sphere( AimRay.Position, 2f, Color.Red, duration: 10f );
+			DebugOverlay.Line( EyePosition, tr.EndPosition, 10f,  false);
+			if (tr.Hit)
+			{
+				DebugOverlay.Sphere( tr.EndPosition, 2f, Color.Red, duration: 10f );
+			}
 		}
 
 		var viewAngles = ViewAngles;
@@ -162,6 +214,12 @@ public partial class Pawn : AnimatedEntity
 			Camera.FirstPersonViewer = this;
 			Camera.Position = EyePosition;
 		}
+	}
+
+	[GameEvent.Client.Frame]
+	protected virtual void OnFrame()
+	{
+
 	}
 
 	public TraceResult TraceBBox( Vector3 start, Vector3 end, float liftFeet = 0.0f )
